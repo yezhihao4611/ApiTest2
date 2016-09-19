@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_horizontal|top">
+
+    <ImageView
+        android:id="@+id/iv_loadIcon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@drawable/tableview_pull_refresh_arrow_down"/>
+
+    <TextView
+        android:id="@+id/tv_loadText"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_height="wrap_content"
+        android:text="下拉刷新"
+        android:textSize="24dp"/>
+
+
+</LinearLayout>
