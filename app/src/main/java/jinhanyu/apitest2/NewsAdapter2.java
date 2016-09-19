@@ -30,7 +30,6 @@ public class NewsAdapter2 extends BaseAdapter{
 	  
 	     
 	public NewsAdapter2(Context context) {
-		// TODO Auto-generated constructor stub
 		mContext = context;
 		mPageAdaper = new mPagerAdapter();
 		mNewsImages = new ArrayList<ImageView>();
@@ -38,7 +37,6 @@ public class NewsAdapter2 extends BaseAdapter{
 	}
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
 		return 20;
 	}
 
@@ -50,9 +48,7 @@ public class NewsAdapter2 extends BaseAdapter{
 
 	@Override
 	public long getItemId(int position) {
-		// TODO Auto-generated method stub
-		
-		if (position == 0) 
+		if (position == 0)
 			return 0;
 		else
 			return position-1;
@@ -60,20 +56,16 @@ public class NewsAdapter2 extends BaseAdapter{
 
 	@Override
 	public int getItemViewType(int position) {
-		// TODO Auto-generated method stub
 		return position > 0 ? 0 : 1;
-		
 	}
  
 
 	@Override
 	public int getViewTypeCount() {
-		// TODO Auto-generated method stub
 		return 2;
 	}
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		// TODO Auto-generated method stub
 		if(position == 0)
 		{	
 	        return getTopView(convertView);   
