@@ -72,9 +72,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         news_number = 0;
         list = new ArrayList<>();
         refresh();
-
         initRefreshLayout(mRefreshLayout);
-
 
 
 //        store_house_ptr_frame = (PtrFrameLayout) findViewById(R.id.store_house_ptr_frame);
@@ -156,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                                         newsInfo.setImageUrl(jsoData.getString("imgsrc"));
                                         newsInfo.setNewsUrl(jsoData.getString("url"));
                                     }
+                                    list.add(newsInfo);
                                 } else {
                                     JSONArray jsaAds = jsoData.getJSONArray("ads");
                                     picNewsInfo = new PicNewsInfo();
@@ -167,11 +166,13 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
 //                                viewpager.setAdapter(viewPagerAdapter);
 //                                indicator.setViewPager(viewpager);
                                 }
-
-                                list.add(newsInfo);
                             }
                             newsAdapter = new NewsAdapter(MainActivity.this, list);
-                            lv_news.setAdapter(newsAdapter);
+                            if (news_number == 0) {
+                                lv_news.setAdapter(newsAdapter);
+                            } else {
+                                newsAdapter.notifyDataSetInvalidated();
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -202,125 +203,117 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
     }
 
 
-        private void initRefreshLayout(BGARefreshLayout refreshLayout) {
-            mRefreshLayout = (BGARefreshLayout) findViewById(R.id.rl_modulename_refresh);
-            // 为BGARefreshLayout设置代理
-            mRefreshLayout.setDelegate(this);
-            // 设置下拉刷新和上拉加载更多的风格     参数1：应用程序上下文，参数2：是否具有上拉加载更多功能
-            BGARefreshViewHolder refreshViewHolder = new BGARefreshViewHolder(this, true) {
-                @Override
-                public View getRefreshHeaderView() {
-                    return null;
-                }
+    private void initRefreshLayout(BGARefreshLayout refreshLayout) {
+        mRefreshLayout = (BGARefreshLayout) findViewById(R.id.rl_modulename_refresh);
+        // 为BGARefreshLayout设置代理
+        mRefreshLayout.setDelegate(this);
+        // 设置下拉刷新和上拉加载更多的风格     参数1：应用程序上下文，参数2：是否具有上拉加载更多功能
+        BGARefreshViewHolder refreshViewHolder = new BGARefreshViewHolder(this, true) {
+            @Override
+            public View getRefreshHeaderView() {
+                return null;
+            }
 
-                @Override
-                public void handleScale(float scale, int moveYDistance) {
+            @Override
+            public void handleScale(float scale, int moveYDistance) {
 
-                }
+            }
 
-                @Override
-                public void changeToIdle() {
+            @Override
+            public void changeToIdle() {
 
-                }
+            }
 
-                @Override
-                public void changeToPullDown() {
+            @Override
+            public void changeToPullDown() {
 
-                }
+            }
 
-                @Override
-                public void changeToReleaseRefresh() {
+            @Override
+            public void changeToReleaseRefresh() {
 
-                }
+            }
 
-                @Override
-                public void changeToRefreshing() {
+            @Override
+            public void changeToRefreshing() {
 
-                }
+            }
 
-                @Override
-                public void onEndRefreshing() {
+            @Override
+            public void onEndRefreshing() {
 
-                }
-            };
+            }
+        };
 //             设置下拉刷新和上拉加载更多的风格
-            mRefreshLayout.setRefreshViewHolder(refreshViewHolder);
+        mRefreshLayout.setRefreshViewHolder(refreshViewHolder);
 
-            // 为了增加下拉刷新头部和加载更多的通用性，提供了以下可选配置选项  -------------START
-            // 设置正在加载更多时不显示加载更多控件
-            // mRefreshLayout.setIsShowLoadingMoreView(false);
-            // 设置正在加载更多时的文本
-//            refreshViewHolder.setLoadingMoreText("正在加载");
-            // 设置整个加载更多控件的背景颜色资源id
+//         为了增加下拉刷新头部和加载更多的通用性，提供了以下可选配置选项  -------------START
+//         设置正在加载更多时不显示加载更多控件
+         mRefreshLayout.setIsShowLoadingMoreView(true);
+//         设置正在加载更多时的文本
+//            refreshViewHolder.setLoadingMoreText("正在加载...");
+//         设置整个加载更多控件的背景颜色资源id
 //            refreshViewHolder.setLoadMoreBackgroundColorRes();
-            // 设置整个加载更多控件的背景drawable资源id
+//         设置整个加载更多控件的背景drawable资源id
 //            refreshViewHolder.setLoadMoreBackgroundDrawableRes();
-            // 设置下拉刷新控件的背景颜色资源id
+//         设置下拉刷新控件的背景颜色资源id
 //            refreshViewHolder.setRefreshViewBackgroundColorRes();
-            // 设置下拉刷新控件的背景drawable资源id
+//         设置下拉刷新控件的背景drawable资源id
 //            refreshViewHolder.setRefreshViewBackgroundDrawableRes();
-            // 设置自定义头部视图（也可以不用设置）     参数1：自定义头部视图（例如广告位）， 参数2：上拉加载更多是否可用
+//         设置自定义头部视图（也可以不用设置）     参数1：自定义头部视图（例如广告位）， 参数2：上拉加载更多是否可用
 //            mRefreshLayout.setCustomHeaderView(mBanner, false);
-            // 可选配置  -------------END
-        }
+//         可选配置  -------------END
+    }
 
-        @Override
-        public void onBGARefreshLayoutBeginRefreshing(BGARefreshLayout refreshLayout) {
-            // 在这里加载最新数据
+    @Override
+    public void onBGARefreshLayoutBeginRefreshing(BGARefreshLayout refreshLayout) {
+        // 在这里加载最新数据
 
-                new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void, Void, Void>() {
 
-                    @Override
-                    protected Void doInBackground(Void... params) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        refresh();
-                        return null;
-                    }
+            @Override
+            protected Void doInBackground(Void... params) {
+                news_number = 0;
+                list = new ArrayList<>();
+                refresh();
+                return null;
+            }
 
-                    @Override
-                    protected void onPostExecute(Void aVoid) {
-                        // 加载完毕后在UI线程结束下拉刷新
-                        mRefreshLayout.endRefreshing();
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                // 加载完毕后在UI线程结束下拉刷新
+                mRefreshLayout.endRefreshing();
 //                        mDatas.addAll(0, DataEngine.loadNewData());
 //                        mAdapter.setDatas(mDatas);
-                    }
-                }.execute();
+            }
+        }.execute();
 
-        }
+    }
 
-        @Override
-        public boolean onBGARefreshLayoutBeginLoadingMore(BGARefreshLayout refreshLayout) {
-            // 在这里加载更多数据，或者更具产品需求实现上拉刷新也可以
+    @Override
+    public boolean onBGARefreshLayoutBeginLoadingMore(BGARefreshLayout refreshLayout) {
+        // 在这里加载更多数据，或者更具产品需求实现上拉刷新也可以
 
-                new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void, Void, Void>() {
 
-                    @Override
-                    protected Void doInBackground(Void... params) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        news_number+=20;
-                        refresh();
-                        return null;
-                    }
+            @Override
+            protected Void doInBackground(Void... params) {
+                news_number += 20;
+                refresh();
+                return null;
+            }
 
-                    @Override
-                    protected void onPostExecute(Void aVoid) {
-                        // 加载完毕后在UI线程结束加载更多
-                        mRefreshLayout.endLoadingMore();
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                // 加载完毕后在UI线程结束加载更多
+                mRefreshLayout.endLoadingMore();
 //                        mAdapter.addDatas(DataEngine.loadMoreData());
-                    }
-                }.execute();
-                return true;
-        }
+            }
+        }.execute();
+        return true;
+    }
 
-        // 通过代码方式控制进入正在刷新状态。应用场景：某些应用在activity的onStart方法中调用，自动进入正在刷新状态获取最新数据
+    // 通过代码方式控制进入正在刷新状态。应用场景：某些应用在activity的onStart方法中调用，自动进入正在刷新状态获取最新数据
     public void beginRefreshing() {
         mRefreshLayout.beginRefreshing();
     }
