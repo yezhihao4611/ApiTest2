@@ -9,6 +9,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,8 +29,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.bingoogolapple.refreshlayout.BGAMeiTuanRefreshViewHolder;
+import cn.bingoogolapple.refreshlayout.BGAMoocStyleRefreshViewHolder;
+import cn.bingoogolapple.refreshlayout.BGANormalRefreshViewHolder;
 import cn.bingoogolapple.refreshlayout.BGARefreshLayout;
 import cn.bingoogolapple.refreshlayout.BGARefreshViewHolder;
+import cn.bingoogolapple.refreshlayout.BGAStickinessRefreshViewHolder;
 import in.srain.cube.views.ptr.PtrDefaultHandler;
 import in.srain.cube.views.ptr.PtrFrameLayout;
 import in.srain.cube.views.ptr.PtrHandler;
@@ -47,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
     String channel_type;
     String channel_id;
     int news_number;
+    int news_freshnumber;
     ListView lv_news;
     NewsInfo newsInfo;
     PicNewsInfo picNewsInfo;
@@ -70,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         channel_type = ApiConstants.HEADLINE_TYPE;
         channel_id = ApiConstants.HEADLINE_ID;
         news_number = 0;
+        news_freshnumber = 0;
         list = new ArrayList<>();
         refresh();
         initRefreshLayout(mRefreshLayout);
@@ -120,6 +127,13 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                 startActivityForResult(intent, RQ);
             }
         });
+        lv_news.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                return true;
+            }
+        });
     }
 
 
@@ -147,14 +161,14 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                                 newsInfo = new NewsInfo();
                                 JSONObject jsoData = (JSONObject) jsaData.get(i);
                                 if (jsoData.isNull("ads")) {
-                                    if (jsoData.isNull("url")) {
-                                        continue;
+                                    if (jsoData.isNull("url") || jsoData.getString("url") == "") {
+
                                     } else {
                                         newsInfo.setTitle(jsoData.getString("title"));
                                         newsInfo.setImageUrl(jsoData.getString("imgsrc"));
                                         newsInfo.setNewsUrl(jsoData.getString("url"));
+                                        list.add(newsInfo);
                                     }
-                                    list.add(newsInfo);
                                 } else {
                                     JSONArray jsaAds = jsoData.getJSONArray("ads");
                                     picNewsInfo = new PicNewsInfo();
@@ -190,10 +204,15 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
 
                 url = ApiConstants.NEWS_DETAIL + channel_type + "/" + channel_id + "/" + news_number + ApiConstants.END_URL;
                 try {
-                    OkHttpClient okHttpClient = new OkHttpClient();
-                    Request request = new Request.Builder().url(url).build();
-                    Response response = okHttpClient.newCall(request).execute();
-                    str = response.body().string();
+                    for (int i = 0; i < 10; i++) {
+                        OkHttpClient okHttpClient = new OkHttpClient();
+                        Request request = new Request.Builder().url(url).build();
+                        Response response = okHttpClient.newCall(request).execute();
+                        str = response.body().string();
+                        if (str != null && str != "") {
+                            break;
+                        }
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -208,48 +227,14 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         // 为BGARefreshLayout设置代理
         mRefreshLayout.setDelegate(this);
         // 设置下拉刷新和上拉加载更多的风格     参数1：应用程序上下文，参数2：是否具有上拉加载更多功能
-        BGARefreshViewHolder refreshViewHolder = new BGARefreshViewHolder(this, true) {
-            @Override
-            public View getRefreshHeaderView() {
-                return null;
-            }
+        BGARefreshViewHolder refreshViewHolder = new BGANormalRefreshViewHolder(this, true);
 
-            @Override
-            public void handleScale(float scale, int moveYDistance) {
-
-            }
-
-            @Override
-            public void changeToIdle() {
-
-            }
-
-            @Override
-            public void changeToPullDown() {
-
-            }
-
-            @Override
-            public void changeToReleaseRefresh() {
-
-            }
-
-            @Override
-            public void changeToRefreshing() {
-
-            }
-
-            @Override
-            public void onEndRefreshing() {
-
-            }
-        };
 //             设置下拉刷新和上拉加载更多的风格
         mRefreshLayout.setRefreshViewHolder(refreshViewHolder);
 
 //         为了增加下拉刷新头部和加载更多的通用性，提供了以下可选配置选项  -------------START
 //         设置正在加载更多时不显示加载更多控件
-         mRefreshLayout.setIsShowLoadingMoreView(true);
+        mRefreshLayout.setIsShowLoadingMoreView(true);
 //         设置正在加载更多时的文本
 //            refreshViewHolder.setLoadingMoreText("正在加载...");
 //         设置整个加载更多控件的背景颜色资源id
@@ -273,9 +258,10 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
 
             @Override
             protected Void doInBackground(Void... params) {
-                news_number = 0;
-                list = new ArrayList<>();
+                news_number = 400 - news_freshnumber;
+                list.clear();
                 refresh();
+                news_freshnumber += 20;
                 return null;
             }
 
@@ -283,8 +269,6 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
             protected void onPostExecute(Void aVoid) {
                 // 加载完毕后在UI线程结束下拉刷新
                 mRefreshLayout.endRefreshing();
-//                        mDatas.addAll(0, DataEngine.loadNewData());
-//                        mAdapter.setDatas(mDatas);
             }
         }.execute();
 
@@ -307,7 +291,6 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
             protected void onPostExecute(Void aVoid) {
                 // 加载完毕后在UI线程结束加载更多
                 mRefreshLayout.endLoadingMore();
-//                        mAdapter.addDatas(DataEngine.loadMoreData());
             }
         }.execute();
         return true;
