@@ -2,6 +2,7 @@ package jinhanyu.apitest2;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -130,7 +132,28 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         lv_news.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("收藏这条新闻吗？");
+                builder.setPositiveButton("收藏", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(MainActivity.this,"已收藏",Toast.LENGTH_SHORT).show();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
+                    }
+                });
+                builder.setNeutralButton("不再出现", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(MainActivity.this,"该新闻不会再出现",Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+                builder.show();
                 return true;
             }
         });
@@ -204,15 +227,10 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
 
                 url = ApiConstants.NEWS_DETAIL + channel_type + "/" + channel_id + "/" + news_number + ApiConstants.END_URL;
                 try {
-                    for (int i = 0; i < 10; i++) {
                         OkHttpClient okHttpClient = new OkHttpClient();
                         Request request = new Request.Builder().url(url).build();
                         Response response = okHttpClient.newCall(request).execute();
                         str = response.body().string();
-                        if (str != null && str != "") {
-                            break;
-                        }
-                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
