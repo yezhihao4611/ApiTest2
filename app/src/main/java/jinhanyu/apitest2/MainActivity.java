@@ -1,16 +1,13 @@
 package jinhanyu.apitest2;
 
-import android.Manifest;
-import android.content.Context;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -31,96 +28,57 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.bingoogolapple.refreshlayout.BGAMeiTuanRefreshViewHolder;
-import cn.bingoogolapple.refreshlayout.BGAMoocStyleRefreshViewHolder;
 import cn.bingoogolapple.refreshlayout.BGANormalRefreshViewHolder;
 import cn.bingoogolapple.refreshlayout.BGARefreshLayout;
 import cn.bingoogolapple.refreshlayout.BGARefreshViewHolder;
-import cn.bingoogolapple.refreshlayout.BGAStickinessRefreshViewHolder;
-import in.srain.cube.views.ptr.PtrDefaultHandler;
-import in.srain.cube.views.ptr.PtrFrameLayout;
-import in.srain.cube.views.ptr.PtrHandler;
 import jinhanyu.apitest2.viewpager.ViewPagerAdapter;
-import me.relex.circleindicator.CircleIndicator;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements BGARefreshLayout.BGARefreshLayoutDelegate {
-    public static int RQ = 110;
-    String url;
-    String str;
-    public static final int MSG = 99;
-    String channel_type;
-    String channel_id;
-    int news_number;
-    int news_freshnumber;
+    public static int RQ = 110; //startActivityforResult所需的RequestCode
+    public static final int MSG = 99;  //handler所需的MSG
+    String url; //新闻json的网址
+    String str;  //json的内容
+    String channel_type;  //频道类型
+    String channel_id;//频道id
+    int news_number; //新闻条目序号
+    int news_freshnumber;//刷新次数
     ListView lv_news;
     NewsInfo newsInfo;
-    PicNewsInfo picNewsInfo;
     List<NewsInfo> list;
     NewsAdapter newsAdapter;
-    NewsAdapter2 newsAdapter2;
     ViewPagerAdapter viewPagerAdapter;
-    CircleIndicator indicator;
     ViewPager viewpager;
-    LoadingHeadView loadingHeadView;
-    PtrFrameLayout store_house_ptr_frame;
-    RefreshableView refreshableView;
-    private BGARefreshLayout mRefreshLayout;
+    BGARefreshLayout mRefreshLayout;
+    NewsDataHelper newsDataHelper;
+    SQLiteDatabase sqLiteWritableDatabase;
+    SQLiteDatabase sqLiteReadableDatabase;
+    ContentValues values;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //初始化控件
         initView();
+        //初始化下拉刷新、上拉加载控件
+        initRefreshLayout(mRefreshLayout);
+
+        //初始化为“热门”频道
         channel_type = ApiConstants.HEADLINE_TYPE;
         channel_id = ApiConstants.HEADLINE_ID;
         news_number = 0;
-        news_freshnumber = 0;
+        news_freshnumber = 1;
+
+        //初始化list
         list = new ArrayList<>();
         refresh();
-        initRefreshLayout(mRefreshLayout);
+//        beginRefreshing();
 
 
-//        store_house_ptr_frame = (PtrFrameLayout) findViewById(R.id.store_house_ptr_frame);
-//        loadingHeadView = new LoadingHeadView(this);
-//
-//        store_house_ptr_frame.setHeaderView(loadingHeadView);
-//        store_house_ptr_frame.addPtrUIHandler(loadingHeadView);
-//        store_house_ptr_frame.setPtrHandler(new PtrHandler() {
-//            @Override
-//            public boolean checkCanDoRefresh(PtrFrameLayout frame, View content, View header) {
-//                return PtrDefaultHandler.checkContentCanBePulledDown(frame, content, header);
-//            }
-//
-//            @Override
-//            public void onRefreshBegin(PtrFrameLayout frame) {
-//                frame.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        refresh();
-//                        store_house_ptr_frame.refreshComplete();
-//                    }
-//                }, 500);
-//            }
-//        });
-
-//        refreshableView = (RefreshableView) findViewById(R.id.refreshable_view);
-//        refreshableView.setOnRefreshListener(new RefreshableView.PullToRefreshListener() {
-//            @Override
-//            public void onRefresh() {
-//                list = new ArrayList<>();
-//                refresh();
-//                try {
-//                    Thread.sleep(2000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                refreshableView.finishRefreshing();
-//            }
-//        }, 0);
         lv_news.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -137,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                 builder.setPositiveButton("收藏", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Toast.makeText(MainActivity.this,"已收藏",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "已收藏", Toast.LENGTH_SHORT).show();
                     }
                 });
                 builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -149,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                 builder.setNeutralButton("不再出现", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(MainActivity.this,"该新闻不会再出现",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "该新闻不会再出现", Toast.LENGTH_SHORT).show();
 
                     }
                 });
@@ -159,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         });
     }
 
-
+    //初始化控件
     private void initView() {
         lv_news = (ListView) findViewById(R.id.lv_news);
 //        indicator = (CircleIndicator) findViewById(R.id.indicator);
@@ -175,7 +133,11 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                 case MSG:
                     if (str == null) {
                         Toast.makeText(MainActivity.this, "无网络连接", Toast.LENGTH_SHORT).show();
+//                        loadNews();
                     } else {
+                        newsDataHelper = new NewsDataHelper(MainActivity.this);
+                        values = new ContentValues();
+                        sqLiteWritableDatabase = newsDataHelper.getWritableDatabase();
                         try {
                             JSONObject jso = new JSONObject(str);
                             JSONArray jsaData = jso.getJSONArray(channel_id);
@@ -184,24 +146,18 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                                 newsInfo = new NewsInfo();
                                 JSONObject jsoData = (JSONObject) jsaData.get(i);
                                 if (jsoData.isNull("ads")) {
-                                    if (jsoData.isNull("url") || jsoData.getString("url") == "") {
+                                    if (!jsoData.isNull("url") && jsoData.getString("url") != "" && jsoData.getString("url").contains("html")) {
 
-                                    } else {
                                         newsInfo.setTitle(jsoData.getString("title"));
                                         newsInfo.setImageUrl(jsoData.getString("imgsrc"));
                                         newsInfo.setNewsUrl(jsoData.getString("url"));
                                         list.add(newsInfo);
+
+                                        values.put("title", jsoData.getString("title"));
+                                        values.put("imgsrc", jsoData.getString("imgsrc"));
+                                        values.put("url", jsoData.getString("url"));
+                                        sqLiteWritableDatabase.insert(NewsDataHelper.TABLE_NAME, null, values);
                                     }
-                                } else {
-                                    JSONArray jsaAds = jsoData.getJSONArray("ads");
-                                    picNewsInfo = new PicNewsInfo();
-                                    for (int j = 0; j < jsaAds.length(); j++) {
-                                        JSONObject jsoAds = (JSONObject) jsaAds.get(j);
-                                        picNewsInfo.setTitle(jsoAds.getString("title"));
-                                        picNewsInfo.setImageUrl(jsoAds.getString("imgsrc"));
-                                    }
-//                                viewpager.setAdapter(viewPagerAdapter);
-//                                indicator.setViewPager(viewpager);
                                 }
                             }
                             newsAdapter = new NewsAdapter(MainActivity.this, list);
@@ -224,19 +180,37 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
             @Override
             public void run() {
                 super.run();
-
                 url = ApiConstants.NEWS_DETAIL + channel_type + "/" + channel_id + "/" + news_number + ApiConstants.END_URL;
                 try {
-                        OkHttpClient okHttpClient = new OkHttpClient();
-                        Request request = new Request.Builder().url(url).build();
-                        Response response = okHttpClient.newCall(request).execute();
-                        str = response.body().string();
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    Request request = new Request.Builder().url(url).build();
+                    Response response = okHttpClient.newCall(request).execute();
+                    str = response.body().string();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 handler.sendEmptyMessage(MSG);
             }
         }.start();
+    }
+
+    public void loadNews() {
+        newsDataHelper = new NewsDataHelper(MainActivity.this);
+        sqLiteReadableDatabase = newsDataHelper.getReadableDatabase();
+        Cursor cursor = sqLiteReadableDatabase.query(NewsDataHelper.TABLE_NAME, null, null, null, null, null, null);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                newsInfo = new NewsInfo();
+                newsInfo.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+                newsInfo.setImageUrl(cursor.getString(cursor.getColumnIndex("imgsrc")));
+                newsInfo.setNewsUrl(cursor.getString(cursor.getColumnIndex("url")));
+                Log.i("Hao",cursor.getString(cursor.getColumnIndex("title")));
+                list.add(newsInfo);
+            }
+        }
+        sqLiteReadableDatabase.close();
+        newsAdapter = new NewsAdapter(MainActivity.this, list);
+        lv_news.setAdapter(newsAdapter);
     }
 
 
@@ -246,12 +220,11 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         mRefreshLayout.setDelegate(this);
         // 设置下拉刷新和上拉加载更多的风格     参数1：应用程序上下文，参数2：是否具有上拉加载更多功能
         BGARefreshViewHolder refreshViewHolder = new BGANormalRefreshViewHolder(this, true);
-
 //             设置下拉刷新和上拉加载更多的风格
         mRefreshLayout.setRefreshViewHolder(refreshViewHolder);
 
 //         为了增加下拉刷新头部和加载更多的通用性，提供了以下可选配置选项  -------------START
-//         设置正在加载更多时不显示加载更多控件
+//         设置正在加载更多时显示加载更多控件
         mRefreshLayout.setIsShowLoadingMoreView(true);
 //         设置正在加载更多时的文本
 //            refreshViewHolder.setLoadingMoreText("正在加载...");
@@ -276,10 +249,10 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
 
             @Override
             protected Void doInBackground(Void... params) {
-                news_number = 400 - news_freshnumber;
+                news_number = 400 - news_freshnumber * 20;
                 list.clear();
                 refresh();
-                news_freshnumber += 20;
+                news_freshnumber++;
                 return null;
             }
 

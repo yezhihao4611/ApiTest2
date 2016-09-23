@@ -19,8 +19,6 @@ public class NewsAdapter extends BaseAdapter {
     NewsInfo newsInfo;
     List<NewsInfo> list;
     Context context;
-    int TYPE_0 = 0;
-    int TYPE_1 = 1;
 
     public NewsAdapter(Context context, List<NewsInfo> list) {
         this.context = context;
@@ -42,73 +40,30 @@ public class NewsAdapter extends BaseAdapter {
         return i;
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        if (position == 0) {
-            return TYPE_0;
-        } else
-            return TYPE_1;
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return 2;
-    }
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        ViewHolder_0 viewHolder_0 = null;
-        ViewHolder_1 viewHolder_1 = null;
+        ViewHolder viewHolder = null;
 
-        if (view == null || view.getTag() == null) {
-            switch (getItemViewType(i)) {
-                case 0:
-                    view = LayoutInflater.from(context).inflate(R.layout.item_news, null);
-                    viewHolder_0 = new ViewHolder_0();
-                    viewHolder_0.tv_title_0 = (TextView) view.findViewById(R.id.tv_title);
-                    viewHolder_0.iv_titleImage_0 = (ImageView) view.findViewById(R.id.iv_titleImage);
-                    viewHolder_0.tv_newsUrl_0 = (TextView) view.findViewById(R.id.tv_newsUrl);
-                    view.setTag(viewHolder_0);
-                    break;
-                case 1:
-                    view = LayoutInflater.from(context).inflate(R.layout.item_news, null);
-                    viewHolder_1 = new ViewHolder_1();
-                    viewHolder_1.tv_title_1 = (TextView) view.findViewById(R.id.tv_title);
-                    viewHolder_1.iv_titleImage_1 = (ImageView) view.findViewById(R.id.iv_titleImage);
-                    viewHolder_1.tv_newsUrl_1 = (TextView) view.findViewById(R.id.tv_newsUrl);
-                    view.setTag(viewHolder_1);
-                    break;
-            }
-        }
-        switch (getItemViewType(i)) {
-            case 0:
-                viewHolder_0 = (ViewHolder_0) view.getTag();
-                newsInfo = list.get(i);
-                viewHolder_0.tv_title_0.setText(newsInfo.getTitle());
-                Picasso.with(context).load(newsInfo.getImageUrl()).into(viewHolder_0.iv_titleImage_0);
-                viewHolder_0.tv_newsUrl_0.setText(newsInfo.getNewsUrl());
-                break;
-            case 1:
-                viewHolder_1 = (ViewHolder_1) view.getTag();
-                newsInfo = list.get(i);
-                viewHolder_1.tv_title_1.setText(newsInfo.getTitle());
-                Picasso.with(context).load(newsInfo.getImageUrl()).into(viewHolder_1.iv_titleImage_1);
-                viewHolder_1.tv_newsUrl_1.setText(newsInfo.getNewsUrl());
-                break;
-        }
+        view = LayoutInflater.from(context).inflate(R.layout.item_news, null);
+        viewHolder = new ViewHolder();
+        viewHolder.tv_title = (TextView) view.findViewById(R.id.tv_title);
+        viewHolder.iv_titleImage = (ImageView) view.findViewById(R.id.iv_titleImage);
+        viewHolder.tv_newsUrl = (TextView) view.findViewById(R.id.tv_newsUrl);
+        view.setTag(viewHolder);
+
+        viewHolder = (ViewHolder) view.getTag();
+        newsInfo = list.get(i);
+        viewHolder.tv_title.setText(newsInfo.getTitle());
+        Picasso.with(context).load(newsInfo.getImageUrl()).into(viewHolder.iv_titleImage);
+        viewHolder.tv_newsUrl.setText(newsInfo.getNewsUrl());
 
         return view;
     }
 
-    class ViewHolder_0 {
-        private TextView tv_title_0;
-        private TextView tv_newsUrl_0;
-        private ImageView iv_titleImage_0;
-    }
-
-    class ViewHolder_1 {
-        private TextView tv_title_1;
-        private TextView tv_newsUrl_1;
-        private ImageView iv_titleImage_1;
+    class ViewHolder {
+        private TextView tv_title;
+        private TextView tv_newsUrl;
+        private ImageView iv_titleImage;
     }
 }
