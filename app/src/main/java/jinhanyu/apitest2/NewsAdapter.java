@@ -43,15 +43,15 @@ public class NewsAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        ViewHolder viewHolder = null;
-
-        view = LayoutInflater.from(context).inflate(R.layout.item_news, null);
-        viewHolder = new ViewHolder();
-        viewHolder.tv_title = (TextView) view.findViewById(R.id.tv_title);
-        viewHolder.iv_titleImage = (ImageView) view.findViewById(R.id.iv_titleImage);
-        viewHolder.tv_newsUrl = (TextView) view.findViewById(R.id.tv_newsUrl);
-        view.setTag(viewHolder);
-
+        ViewHolder viewHolder;
+        if (view == null || view.getTag() == null) {
+            view = LayoutInflater.from(context).inflate(R.layout.item_news, null);
+            viewHolder = new ViewHolder();
+            viewHolder.tv_title = (TextView) view.findViewById(R.id.tv_title);
+            viewHolder.iv_titleImage = (ImageView) view.findViewById(R.id.iv_titleImage);
+            viewHolder.tv_newsUrl = (TextView) view.findViewById(R.id.tv_newsUrl);
+            view.setTag(viewHolder);
+        }
         viewHolder = (ViewHolder) view.getTag();
         newsInfo = list.get(i);
         viewHolder.tv_title.setText(newsInfo.getTitle());
