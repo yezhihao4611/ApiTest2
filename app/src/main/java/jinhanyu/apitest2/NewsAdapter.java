@@ -55,7 +55,7 @@ public class NewsAdapter extends BaseAdapter {
         viewHolder = (ViewHolder) view.getTag();
         newsInfo = list.get(i);
         viewHolder.tv_title.setText(newsInfo.getTitle());
-        Picasso.with(context).load(newsInfo.getImageUrl()).into(viewHolder.iv_titleImage);
+        Picasso.with(context).load(newsInfo.getImageUrl()).error(R.drawable.replaced).into(viewHolder.iv_titleImage);
         viewHolder.tv_newsUrl.setText(newsInfo.getNewsUrl());
 
         return view;

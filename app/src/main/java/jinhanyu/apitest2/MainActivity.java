@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         //初始化list
         list = new ArrayList<>();
 
-        refresh();
+        showNews();
 
         lv_news.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -92,13 +92,13 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                 builder.setPositiveButton("收藏", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-
+//
                         likeDataHelper = new LikeDataHelper(MainActivity.this);
                         likeValues = new ContentValues();
                         likeSqLiteWritableDatabase = likeDataHelper.getWritableDatabase();
-                        values.put("title", list.get(position).getTitle());
-                        values.put("imgsrc", list.get(position).getImageUrl());
-                        values.put("url", list.get(position).getNewsUrl());
+                        likeValues.put("title", list.get(position).getTitle());
+                        likeValues.put("imgsrc", list.get(position).getImageUrl());
+                        likeValues.put("url", list.get(position).getNewsUrl());
                         likeSqLiteWritableDatabase.insert(LikeDataHelper.TABLE_NAME, null, likeValues);
 
                         Toast.makeText(MainActivity.this, "已收藏", Toast.LENGTH_SHORT).show();
@@ -146,7 +146,9 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                             newsDataHelper = new NewsDataHelper(MainActivity.this);
                             values = new ContentValues();
                             sqLiteWritableDatabase = newsDataHelper.getWritableDatabase();
-                            sqLiteWritableDatabase.delete(NewsDataHelper.TABLE_NAME, "1", null);
+                            if (news_number==0){
+//                                sqLiteWritableDatabase.delete(NewsDataHelper.TABLE_NAME,"1",null);
+                            }
                             for (int i = 0; i < jsaData.length(); i++) {
                                 newsInfo = new NewsInfo();
                                 JSONObject jsoData = (JSONObject) jsaData.get(i);
@@ -164,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
                                     }
                                 }
                             }
+                            sqLiteWritableDatabase.close();
                             newsAdapter = new NewsAdapter(MainActivity.this, list);
                             if (news_number == 0) {
                                 lv_news.setAdapter(newsAdapter);
@@ -180,13 +183,14 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
         }
     };
 
-    public void refresh() {
+    public void showNews() {
         new Thread() {
             @Override
             public void run() {
                 super.run();
                 url = ApiConstants.NEWS_DETAIL + channel_type + "/" + channel_id + "/" + news_number + ApiConstants.END_URL;
                 try {
+                    str=null;
                     OkHttpClient okHttpClient = new OkHttpClient();
                     Request request = new Request.Builder().url(url).build();
                     Response response = okHttpClient.newCall(request).execute();
@@ -220,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
 
     private void loadMore() {
         news_number = news_number + 20;
-        refresh();
+        showNews();
     }
 
     private void initRefreshLayout(BGARefreshLayout refreshLayout) {
@@ -244,10 +248,10 @@ public class MainActivity extends AppCompatActivity implements BGARefreshLayout.
             protected Void doInBackground(Void... params) {
                 try {
                     Thread.sleep(500);
-                    news_number = 200 - 20 * news_refreshnumber;
+                    news_number = 60 + 20 * news_refreshnumber;
                     news_refreshnumber++;
                     list.clear();
-                    refresh();
+                    showNews();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
