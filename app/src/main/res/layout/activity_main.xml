@@ -1,19 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="jinhanyu.apitest2.MainActivity">
+    android:background="#ffffff"
+    android:orientation="vertical">
 
-    <cn.bingoogolapple.refreshlayout.BGARefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/rl_modulename_refresh"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <ListView
-            android:id="@+id/lv_news"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-    </cn.bingoogolapple.refreshlayout.BGARefreshLayout>
+        <jinhanyu.apitest2.custom.ViewPagerIndicator
+            android:id="@+id/ypi_indicator"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_weight="1"
+            android:background="#449900"
+            android:orientation="horizontal">
+
+        </jinhanyu.apitest2.custom.ViewPagerIndicator>
+
+        <ImageButton
+            android:id="@+id/ib_add_main"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="#555555"
+            android:onClick="doClick"
+            android:src="@mipmap/health_checkin_icon_add" />
+    </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp_main"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+    </android.support.v4.view.ViewPager>
+
 </LinearLayout>

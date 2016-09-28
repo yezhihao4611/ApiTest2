@@ -1,4 +1,4 @@
-package jinhanyu.apitest2;
+package jinhanyu.apitest2.news;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,8 +10,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
-import com.liuguangqiang.swipeback.SwipeBackActivity;
-import com.liuguangqiang.swipeback.SwipeBackLayout;
+import jinhanyu.apitest2.R;
 
 
 /**

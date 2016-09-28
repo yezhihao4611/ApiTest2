@@ -1,4 +1,4 @@
-package jinhanyu.apitest2;
+package jinhanyu.apitest2.news;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,6 +11,8 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+
+import jinhanyu.apitest2.R;
 
 /**
  * Created by Administrator on 2016/9/8 0008.

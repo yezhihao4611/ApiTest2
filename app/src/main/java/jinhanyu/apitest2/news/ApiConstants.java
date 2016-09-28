@@ -1,4 +1,4 @@
-package jinhanyu.apitest2;
+package jinhanyu.apitest2.news;
 
 /**
  * Created by Administrator on 2016/9/12 0012.

@@ -1,14 +1,10 @@
-package jinhanyu.apitest2;
+package jinhanyu.apitest2.news;
 
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
-import com.liuguangqiang.swipeback.SwipeBackLayout;
-
-import static jinhanyu.apitest2.R.id.swipeBackLayout;
 
 /**
  * Created by Administrator on 2016/9/22 0022.

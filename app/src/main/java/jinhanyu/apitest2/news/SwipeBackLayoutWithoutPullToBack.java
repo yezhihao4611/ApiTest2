@@ -1,4 +1,4 @@
-package jinhanyu.apitest2;
+package jinhanyu.apitest2.news;
 
 import android.app.Activity;
 import android.content.Context;
