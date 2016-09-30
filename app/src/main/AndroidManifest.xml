@@ -22,6 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".news.HistoryActivity"></activity>
+        <activity android:name=".news.LikeActivity"></activity>
         <activity
             android:name=".news.WebActivity"
             android:launchMode="singleTop"

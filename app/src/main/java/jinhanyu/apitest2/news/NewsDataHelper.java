@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class NewsDataHelper extends SQLiteOpenHelper {
     public static String DB_NAME = "newsInfo.db";
     public static String TABLE_NAME = "newsInfoTb";
-    public static String CREATE_TABLE = "create table if not exists " + TABLE_NAME + "(_id integer primary key autoincrement,title varchar(100),imgsrc varchar(100),url varchar(100))";
+    public static String CREATE_TABLE = "create table if not exists " + TABLE_NAME + "(_id integer primary key autoincrement,title varchar(100),imgsrc varchar(100),url varchar(100),time varchar(40))";
     public static int TABLE_VERSION = 1;
 
 

@@ -4,16 +4,35 @@
     android:layout_height="100dp"
     android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/tv_title"
+    <RelativeLayout
         android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:layout_weight="1"
-        android:layout_margin="10dp"
-        android:textColor="#000000"
-        android:text="这是新闻标题"
-        android:textSize="18dp" />
+        android:layout_height="100dp"
+        android:layout_weight="1">
 
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="10dp"
+            android:text="这是新闻标题"
+            android:textColor="#000000"
+            android:textSize="18dp" />
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:text="2016-09-30 10:54:04"
+            android:textColor="#696969"
+            android:textSize="12dp" />
+
+
+    </RelativeLayout>
 
 
     <TextView
@@ -21,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="url"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/iv_titleImage"

@@ -32,6 +32,9 @@ import cn.bingoogolapple.refreshlayout.BGANormalRefreshViewHolder;
 import cn.bingoogolapple.refreshlayout.BGARefreshLayout;
 import cn.bingoogolapple.refreshlayout.BGARefreshViewHolder;
 import jinhanyu.apitest2.news.ApiConstants;
+import jinhanyu.apitest2.news.HistoryActivity;
+import jinhanyu.apitest2.news.HistoryDataHelper;
+import jinhanyu.apitest2.news.LikeActivity;
 import jinhanyu.apitest2.news.LikeDataHelper;
 import jinhanyu.apitest2.news.NewsAdapter;
 import jinhanyu.apitest2.news.NewsDataHelper;
@@ -80,12 +83,16 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
     NewsAdapter newsAdapter;
     NewsDataHelper newsDataHelper;
     LikeDataHelper likeDataHelper;
+    HistoryDataHelper historyDataHelper;
     SQLiteDatabase likeSqLiteWritableDatabase;
     SQLiteDatabase likeSqLiteReadableDatabase;
+    SQLiteDatabase historySQLiteWritableDatabase;
     SQLiteDatabase sqLiteWritableDatabase;
     SQLiteDatabase sqLiteReadableDatabase;
+    SQLiteDatabase historySQLiteReadableDatabase;
     ContentValues values;
     ContentValues likeValues;
+    ContentValues historyValues;
     private BGARefreshLayout mRefreshLayout;
 
 
@@ -109,7 +116,6 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
         news_refreshnumber = 1;
 
 
-
         mRefreshLayout = (BGARefreshLayout) view.findViewById(R.id.rl_modulename_refresh);
         // 为BGARefreshLayout设置代理
         mRefreshLayout.setDelegate(this);
@@ -117,8 +123,6 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
         BGARefreshViewHolder refreshViewHolder = new BGANormalRefreshViewHolder(this.getContext(), true);
         // 设置下拉刷新和上拉加载更多的风格
         mRefreshLayout.setRefreshViewHolder(refreshViewHolder);
-
-
 
 
         //初始化list
@@ -129,6 +133,18 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
         lv_news.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //把点击的新闻保存在历史记录中
+                historyDataHelper = new HistoryDataHelper(getActivity());
+                historyValues = new ContentValues();
+                historySQLiteWritableDatabase = historyDataHelper.getWritableDatabase();
+                historyValues.put("title", list.get(i).getTitle());
+                historyValues.put("imgsrc", list.get(i).getImageUrl());
+                historyValues.put("url", list.get(i).getNewsUrl());
+                historyValues.put("time", list.get(i).getTime());
+                String url[]={list.get(i).getNewsUrl()};
+                historySQLiteWritableDatabase.delete(HistoryDataHelper.TABLE_NAME, "url=?", url);
+                historySQLiteWritableDatabase.insert(HistoryDataHelper.TABLE_NAME, null, historyValues);
+
                 Intent intent = new Intent(getActivity(), WebActivity.class);
                 intent.putExtra("url", ((NewsInfo) lv_news.getItemAtPosition(i)).getNewsUrl());
                 startActivityForResult(intent, RQ);
@@ -142,26 +158,50 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
                 builder.setPositiveButton("收藏", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-//
+
                         likeDataHelper = new LikeDataHelper(getActivity());
                         likeValues = new ContentValues();
                         likeSqLiteWritableDatabase = likeDataHelper.getWritableDatabase();
                         likeValues.put("title", list.get(position).getTitle());
                         likeValues.put("imgsrc", list.get(position).getImageUrl());
                         likeValues.put("url", list.get(position).getNewsUrl());
-                        likeSqLiteWritableDatabase.insert(LikeDataHelper.TABLE_NAME, null, likeValues);
+                        likeValues.put("time", list.get(position).getTime());
+                        String url[]={list.get(position).getNewsUrl()};
 
+
+                        likeSqLiteWritableDatabase.delete(LikeDataHelper.TABLE_NAME, "url=?", url);
+                        likeSqLiteWritableDatabase.insert(LikeDataHelper.TABLE_NAME, null, likeValues);
                         Toast.makeText(getActivity(), "已收藏", Toast.LENGTH_SHORT).show();
+
                     }
                 });
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton("取消收藏", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
+                        likeDataHelper = new LikeDataHelper(getActivity());
+                        likeValues = new ContentValues();
+                        likeSqLiteWritableDatabase = likeDataHelper.getWritableDatabase();
+                        likeValues.put("title", list.get(position).getTitle());
+                        likeValues.put("imgsrc", list.get(position).getImageUrl());
+                        likeValues.put("url", list.get(position).getNewsUrl());
+                        likeValues.put("time", list.get(position).getTime());
+                        String url[]={list.get(position).getNewsUrl()};
+                        likeSqLiteWritableDatabase.delete(LikeDataHelper.TABLE_NAME, "url=?", url);
+                        Toast.makeText(getActivity(), "取消收藏", Toast.LENGTH_SHORT).show();
                     }
                 });
+                builder.setNeutralButton("收藏列表", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                        startActivity(new Intent(getActivity(), HistoryActivity.class));
+                        startActivity(new Intent(getActivity(), LikeActivity.class));
+                    }
+                });
+
                 builder.show();
                 return true;
+
             }
         });
         return view;
@@ -200,8 +240,8 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
                             newsDataHelper = new NewsDataHelper(getActivity());
                             values = new ContentValues();
                             sqLiteWritableDatabase = newsDataHelper.getWritableDatabase();
-                            if (news_number==0){
-                                sqLiteWritableDatabase.delete(NewsDataHelper.TABLE_NAME,"1",null);
+                            if (news_number == 0) {
+                                sqLiteWritableDatabase.delete(NewsDataHelper.TABLE_NAME, "1", null);
                             }
                             for (int i = 0; i < jsaData.length(); i++) {
                                 newsInfo = new NewsInfo();
@@ -211,11 +251,13 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
                                         newsInfo.setTitle(jsoData.getString("title"));
                                         newsInfo.setImageUrl(jsoData.getString("imgsrc"));
                                         newsInfo.setNewsUrl(jsoData.getString("url"));
+                                        newsInfo.setTime(jsoData.getString("lmodify"));
                                         list.add(newsInfo);
 
                                         values.put("title", jsoData.getString("title"));
                                         values.put("imgsrc", jsoData.getString("imgsrc"));
                                         values.put("url", jsoData.getString("url"));
+                                        values.put("time", jsoData.getString("lmodify"));
                                         sqLiteWritableDatabase.insert(NewsDataHelper.TABLE_NAME, null, values);
                                     }
                                 }
@@ -244,7 +286,7 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
                 super.run();
                 url = ApiConstants.NEWS_DETAIL + channel_type + "/" + channel_id + "/" + news_number + ApiConstants.END_URL;
                 try {
-                    str=null;
+                    str = null;
                     OkHttpClient okHttpClient = new OkHttpClient();
                     Request request = new Request.Builder().url(url).build();
                     Response response = okHttpClient.newCall(request).execute();
@@ -267,6 +309,7 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
                 newsInfo.setTitle(cursor.getString(cursor.getColumnIndex("title")));
                 newsInfo.setImageUrl(cursor.getString(cursor.getColumnIndex("imgsrc")));
                 newsInfo.setNewsUrl(cursor.getString(cursor.getColumnIndex("url")));
+                newsInfo.setTime(cursor.getString(cursor.getColumnIndex("time")));
                 list.add(newsInfo);
             }
         }
@@ -280,7 +323,6 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
         news_number = news_number + 20;
         showNews();
     }
-
 
 
     @Override
@@ -338,6 +380,12 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
         }.execute();
 
         return true;
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
 
     }
 }
