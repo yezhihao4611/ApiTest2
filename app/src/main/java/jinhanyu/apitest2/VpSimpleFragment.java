@@ -129,7 +129,7 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
         list = new ArrayList<>();
 
         showNews();
-
+        //点击新闻
         lv_news.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -145,11 +145,14 @@ public class VpSimpleFragment extends Fragment implements BGARefreshLayout.BGARe
                 historySQLiteWritableDatabase.delete(HistoryDataHelper.TABLE_NAME, "url=?", url);
                 historySQLiteWritableDatabase.insert(HistoryDataHelper.TABLE_NAME, null, historyValues);
 
+                //跳转到新闻详情
                 Intent intent = new Intent(getActivity(), WebActivity.class);
                 intent.putExtra("url", ((NewsInfo) lv_news.getItemAtPosition(i)).getNewsUrl());
                 startActivityForResult(intent, RQ);
             }
         });
+
+        //长按新闻
         lv_news.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
